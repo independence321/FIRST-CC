@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>晋城一中校友交流平台</title>
+  <!-- Tailwind CSS v3 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 自定义主题色配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50:  '#e8ecf1',
+              100: '#c5ced9',
+              200: '#9eafc0',
+              300: '#778fa7',
+              400: '#5a7895',
+              500: '#3d6183',
+              600: '#2f5070', // 主色：沉稳深蓝
+              700: '#1a365d',
+              800: '#122845',
+              900: '#0a1a2e',
+            },
+            warm: {
+              50:  '#fefcf8',
+              100: '#faf7f2',
+              200: '#f5f0e8', // 主色：浅米色背景
+              300: '#ebe4d8',
+              400: '#d6c9b0',
+              500: '#c4b48e',
+            },
+            accent: {
+              400: '#c9a84c',
+              500: '#a8893a',
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <!-- 引入 Noto Sans SC 无衬线字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- 自定义样式 -->
+  <style>
+    /* 平滑滚动 */
+    html { scroll-behavior: smooth; }
+    /* 卡片hover悬浮上浮动画 */
+    .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+    /* 按钮hover过渡 */
+    .btn-transition { transition: all 0.3s ease; }
+    /* 相册横向滚动容器 */
+    .gallery-scroll {
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .gallery-scroll::-webkit-scrollbar { display: none; }
+    .gallery-item {
+      scroll-snap-align: center;
+      flex-shrink: 0;
+    }
+    /* 导航切换过渡 */
+    .nav-link { transition: color 0.3s ease, background-color 0.3s ease; }
+    /* 淡入动画 */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeInUp 0.6s ease forwards; }
+    /* Banner背景叠加层 */
+    .banner-overlay {
+      background: linear-gradient(135deg, rgba(15,36,64,0.85) 0%, rgba(26,54,93,0.7) 100%);
+    }
+  </style>
+</head>
+<body class="bg-warm-100 text-primary-900 font-sans antialiased">
+
+<!-- ============================================================ -->
+<!-- 一、顶部导航栏                                               -->
+<!-- ============================================================ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 py-3 px-4 md:px-8">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <!-- Logo / 平台名称 -->
+    <a href="#home" class="flex items-center gap-2 text-xl font-bold tracking-wide select-none" id="nav-brand">
+      <span class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white text-sm font-black">晋</span>
+      <span id="nav-title" class="hidden sm:inline">晋城一中校友平台</span>
+    </a>
+    <!-- 桌面端菜单 -->
+    <div class="hidden lg:flex items-center gap-1">
+      <a href="#home"      class="nav-link px-3 py-2 rounded-lg text-sm font-medium">首页</a>
+      <a href="#news"      class="nav-link px-3 py-2 rounded-lg text-sm font-medium">校友动态</a>
+      <a href="#directory" class="nav-link px-3 py-2 rounded-lg text-sm font-medium">校友名录</a>
+      <a href="#gallery"   class="nav-link px-3 py-2 rounded-lg text-sm font-medium">校园回忆</a>
+      <a href="#messages"  class="nav-link px-3 py-2 rounded-lg text-sm font-medium">捐赠寄语</a>
+      <a href="#contact"   class="nav-link px-3 py-2 rounded-lg text-sm font-medium">联系我们</a>
+    </div>
+    <!-- 登录/注册按钮 -->
+    <div class="hidden lg:flex items-center gap-3">
+      <button class="btn-transition px-4 py-2 text-sm font-medium rounded-full border border-white/60 hover:bg-white hover:text-primary-700" id="btn-login-desktop">
+        登录
+      </button>
+      <button class="btn-transition px-4 py-2 text-sm font-medium rounded-full bg-accent-400 text-white hover:bg-accent-500 shadow-lg shadow-accent-400/25">
+        注册
+      </button>
+    </div>
+    <!-- 移动端汉堡菜单按钮 -->
+    <button id="menu-toggle" class="lg:hidden flex flex-col gap-1.5 p-2 focus:outline-none" aria-label="菜单">
+      <span class="block w-6 h-0.5 bg-current transition-transform duration-300" id="bar1"></span>
+      <span class="block w-6 h-0.5 bg-current transition-opacity   duration-300" id="bar2"></span>
+      <span class="block w-6 h-0.5 bg-current transition-transform duration-300" id="bar3"></span>
+    </button>
+  </div>
+  <!-- 移动端展开菜单 -->
+  <div id="mobile-menu" class="lg:hidden hidden mt-4 pb-2 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl">
+    <div class="flex flex-col p-4 gap-2">
+      <a href="#home"      class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">首页</a>
+      <a href="#news"      class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">校友动态</a>
+      <a href="#directory" class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">校友名录</a>
+      <a href="#gallery"   class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">校园回忆</a>
+      <a href="#messages"  class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">捐赠寄语</a>
+      <a href="#contact"   class="nav-link block px-4 py-3 rounded-xl text-base font-medium hover:bg-primary-50">联系我们</a>
+      <hr class="my-2 border-primary-100">
+      <button class="w-full px-4 py-3 text-sm font-medium rounded-full border-2 border-primary-600 text-primary-700 hover:bg-primary-50">
+        登录
+      </button>
+      <button class="w-full px-4 py-3 text-sm font-medium rounded-full bg-accent-400 text-white hover:bg-accent-500">
+        注册
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- 二、首屏 Banner 区域                                          -->
+<!-- ============================================================ -->
+<section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <!-- 校园背景图（在线无版权图片） -->
+  <img
+    src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1920&q=80"
+    alt="校园背景"
+    class="absolute inset-0 w-full h-full object-cover"
+    loading="eager"
+  >
+  <!-- 深蓝半透明叠加层 -->
+  <div class="banner-overlay absolute inset-0"></div>
+  <!-- 内容 -->
+  <div class="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-wide leading-tight">
+      晋城一中校友交流平台
+    </h1>
+    <p class="text-base sm:text-lg md:text-xl text-warm-200/90 mb-10 leading-relaxed max-w-2xl mx-auto">
+      忆一中岁月，聚八方学子，联结历届校友力量
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <!-- 按钮：加入校友 -->
+      <a href="#messages" class="btn-transition inline-block px-8 py-3.5 rounded-full bg-accent-400 text-white font-semibold text-base shadow-xl shadow-accent-400/30 hover:bg-accent-500 hover:shadow-2xl hover:scale-105">
+        加入校友
+      </a>
+      <!-- 按钮：浏览校友名录 -->
+      <a href="#directory" class="btn-transition inline-block px-8 py-3.5 rounded-full border-2 border-white/70 text-white font-semibold text-base hover:bg-white hover:text-primary-700 hover:border-white">
+        浏览校友名录
+      </a>
+    </div>
+    <!-- 向下滚动提示 -->
+    <div class="mt-16 animate-bounce">
+      <svg class="w-6 h-6 mx-auto text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 三、板块1：平台简介                                           -->
+<!-- ============================================================ -->
+<section id="about" class="py-20 md:py-28 px-4 bg-warm-50">
+  <div class="max-w-6xl mx-auto">
+    <!-- 板块标题 -->
+    <div class="text-center mb-16">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">关于我们</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mb-4">晋城一中校友平台</h2>
+      <div class="w-16 h-1 bg-accent-400 mx-auto rounded-full"></div>
+    </div>
+    <!-- 简介内容：两栏布局 -->
+    <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+      <!-- 左侧：文字介绍 -->
+      <div class="space-y-5 text-primary-700/80 leading-relaxed text-base">
+        <!-- 建校历史 -->
+        <p>
+          <strong class="text-primary-800">晋城一中</strong>创建于<span class="font-semibold text-primary-800">1929年</span>，
+          是山西省首批重点中学、省级示范高中。近百年来，学校秉承"<span class="text-primary-700 font-medium">勤奋、严谨、求实、创新</span>"的校训，
+          为国家培养了大批优秀人才，校友遍布海内外各行各业。
+        </p>
+        <!-- 平台目的 -->
+        <p>
+          本平台旨在<strong class="text-primary-800">汇聚历届毕业生</strong>，搭建校友与母校、校友与校友之间的沟通桥梁。
+          无论您身在何方、身处何职，这里都是您与一中情感联结的纽带。
+        </p>
+        <!-- 平台功能 -->
+        <ul class="space-y-2.5 mt-4">
+          <li class="flex items-start gap-3">
+            <span class="w-6 h-6 mt-0.5 flex-shrink-0 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs">📢</span>
+            <span>发布校园通知、校庆活动、校友聚会等最新资讯</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="w-6 h-6 mt-0.5 flex-shrink-0 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs">🤝</span>
+            <span>组织校友聚会活动，增进各级校友之间的联系与情谊</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="w-6 h-6 mt-0.5 flex-shrink-0 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs">💼</span>
+            <span>对接行业资源，为校友职业发展与创业合作提供支持</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="w-6 h-6 mt-0.5 flex-shrink-0 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs">📖</span>
+            <span>收录历届校友名录，方便查找同窗、重建联系</span>
+          </li>
+        </ul>
+      </div>
+      <!-- 右侧：配图 -->
+      <div class="relative">
+        <img
+          src="https://images.unsplash.com/photo-1523050854058-8df90910d6b7?w=600&h=400&fit=crop&q=80"
+          alt="校园建筑"
+          class="w-full rounded-2xl shadow-xl card-hover"
+          loading="lazy"
+        >
+        <!-- 装饰卡片 -->
+        <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg px-5 py-3 hidden md:block">
+          <p class="text-3xl font-black text-primary-700">95<sup class="text-sm text-primary-400">+</sup></p>
+          <p class="text-xs text-primary-500/70">年办学历史</p>
+        </div>
+        <div class="absolute -top-6 -right-6 bg-white rounded-xl shadow-lg px-5 py-3 hidden md:block">
+          <p class="text-3xl font-black text-accent-400">5<sup class="text-sm text-accent-400/70">万+</sup></p>
+          <p class="text-xs text-primary-500/70">校友遍布全球</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 四、板块2：最新校友动态                                        -->
+<!-- ============================================================ -->
+<section id="news" class="py-20 md:py-28 px-4 bg-warm-200/50">
+  <div class="max-w-6xl mx-auto">
+    <!-- 板块标题 -->
+    <div class="text-center mb-14">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-accent-400/15 text-accent-500 text-sm font-medium mb-4">最新动态</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mb-4">校友动态</h2>
+      <div class="w-16 h-1 bg-accent-400 mx-auto rounded-full"></div>
+    </div>
+    <!-- 动态卡片：3列网格布局 -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- 卡片1 -->
+      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-md">
+        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=320&fit=crop&q=80" alt="校友聚会" class="w-full h-48 object-cover" loading="lazy">
+        <div class="p-6">
+          <span class="text-xs font-semibold text-accent-400 bg-accent-400/10 px-3 py-1 rounded-full">聚会通知</span>
+          <h3 class="text-lg font-bold text-primary-800 mt-3 mb-2">2024届毕业生返校聚会通知</h3>
+          <p class="text-sm text-primary-500/70 leading-relaxed mb-4">诚邀2024届校友于2026年7月返校参加毕业两周年聚会，重温校园时光，共叙同窗情谊。</p>
+          <div class="flex items-center justify-between text-xs text-primary-400">
+            <span>📅 2026-07-15</span>
+            <a href="#" class="text-primary-600 font-medium hover:underline">查看详情 →</a>
+          </div>
+        </div>
+      </div>
+      <!-- 卡片2 -->
+      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-md">
+        <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&h=320&fit=crop&q=80" alt="返校活动" class="w-full h-48 object-cover" loading="lazy">
+        <div class="p-6">
+          <span class="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">返校活动</span>
+          <h3 class="text-lg font-bold text-primary-800 mt-3 mb-2">百年校庆筹备工作正式启动</h3>
+          <p class="text-sm text-primary-500/70 leading-relaxed mb-4">晋城一中百年校庆筹备委员会成立，面向全体校友征集校史资料、老照片与校庆建议。</p>
+          <div class="flex items-center justify-between text-xs text-primary-400">
+            <span>📅 2026-06-01</span>
+            <a href="#" class="text-primary-600 font-medium hover:underline">查看详情 →</a>
+          </div>
+        </div>
+      </div>
+      <!-- 卡片3 -->
+      <div class="card-hover bg-white rounded-2xl overflow-hidden shadow-md">
+        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&h=320&fit=crop&q=80" alt="优秀校友" class="w-full h-48 object-cover" loading="lazy">
+        <div class="p-6">
+          <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">校友喜讯</span>
+          <h3 class="text-lg font-bold text-primary-800 mt-3 mb-2">校友李华荣获国家科技进步奖</h3>
+          <p class="text-sm text-primary-500/70 leading-relaxed mb-4">1998届校友李华教授带领团队在新能源材料领域取得重大突破，荣获2025年度国家科技进步二等奖。</p>
+          <div class="flex items-center justify-between text-xs text-primary-400">
+            <span>📅 2026-05-20</span>
+            <a href="#" class="text-primary-600 font-medium hover:underline">查看详情 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 五、板块3：校友名录快速检索                                    -->
+<!-- ============================================================ -->
+<section id="directory" class="py-20 md:py-28 px-4 bg-warm-50">
+  <div class="max-w-6xl mx-auto">
+    <!-- 板块标题 -->
+    <div class="text-center mb-14">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">查找校友</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mb-4">校友名录</h2>
+      <div class="w-16 h-1 bg-accent-400 mx-auto rounded-full"></div>
+      <p class="text-primary-500/60 mt-3 text-sm">输入关键词快速筛选查找校友（仅作演示样式）</p>
+    </div>
+    <!-- 搜索筛选框 -->
+    <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-10">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5">入学年份</label>
+          <input type="text" id="filter-year" placeholder="例如：2018" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5">班级</label>
+          <input type="text" id="filter-class" placeholder="例如：3班" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5">姓名</label>
+          <input type="text" id="filter-name" placeholder="输入姓名关键词" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5">行业</label>
+          <input type="text" id="filter-industry" placeholder="例如：教育、医疗" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+      </div>
+      <div class="flex justify-end mt-4 gap-3">
+        <button id="btn-reset-filter" class="px-5 py-2 text-sm rounded-full border border-primary-200 text-primary-500 hover:bg-primary-50 transition">
+          重置
+        </button>
+        <button id="btn-search-filter" class="px-5 py-2 text-sm rounded-full bg-primary-600 text-white hover:bg-primary-700 transition">
+          搜索
+        </button>
+      </div>
+    </div>
+    <!-- 搜索结果数量提示 -->
+    <p id="result-count" class="text-sm text-primary-400 mb-6"></p>
+    <!-- 校友名片网格 -->
+    <div id="alumni-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <!-- JS动态渲染 -->
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 六、板块4：校园回忆相册                                        -->
+<!-- ============================================================ -->
+<section id="gallery" class="py-20 md:py-28 px-4 bg-primary-800 overflow-hidden">
+  <div class="max-w-6xl mx-auto">
+    <!-- 板块标题 -->
+    <div class="text-center mb-14">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-white/15 text-warm-200 text-sm font-medium mb-4">回忆珍藏</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">校园回忆相册</h2>
+      <div class="w-16 h-1 bg-accent-400 mx-auto rounded-full"></div>
+    </div>
+    <!-- 横向滚动相册 -->
+    <div class="relative">
+      <!-- 左箭头 -->
+      <button id="gallery-prev" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white flex items-center justify-center shadow-lg transition hidden md:flex" aria-label="上一张">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <!-- 滚动容器 -->
+      <div id="gallery-container" class="gallery-scroll flex gap-5 overflow-x-auto pb-4 px-1">
+        <!-- 图片项由JS动态渲染 -->
+      </div>
+      <!-- 右箭头 -->
+      <button id="gallery-next" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white flex items-center justify-center shadow-lg transition hidden md:flex" aria-label="下一张">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 七、板块5：校友留言寄语区                                      -->
+<!-- ============================================================ -->
+<section id="messages" class="py-20 md:py-28 px-4 bg-warm-50">
+  <div class="max-w-4xl mx-auto">
+    <!-- 板块标题 -->
+    <div class="text-center mb-14">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-accent-400/15 text-accent-500 text-sm font-medium mb-4">校友寄语</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mb-4">捐赠寄语</h2>
+      <div class="w-16 h-1 bg-accent-400 mx-auto rounded-full"></div>
+      <p class="text-primary-500/60 mt-3 text-sm">留下您对母校的祝福与寄语（前端展示，刷新后重置）</p>
+    </div>
+    <!-- 留言表单 -->
+    <div class="bg-white rounded-2xl shadow-md p-6 md:p-8 mb-8">
+      <h3 class="text-lg font-bold text-primary-800 mb-5">写下您的寄语</h3>
+      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5" for="msg-nickname">昵称 <span class="text-red-400">*</span></label>
+          <input type="text" id="msg-nickname" placeholder="您的昵称" maxlength="20" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-primary-500 mb-1.5" for="msg-year">届别 <span class="text-red-400">*</span></label>
+          <input type="text" id="msg-year" placeholder="例如：2018届" maxlength="10" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-primary-500 mb-1.5" for="msg-content">留言内容 <span class="text-red-400">*</span></label>
+        <textarea id="msg-content" rows="4" placeholder="写下您对母校的祝福、对老师的感谢、或对老同学的问候……" maxlength="500" class="w-full px-4 py-2.5 rounded-xl border border-primary-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition resize-none"></textarea>
+        <p class="text-xs text-primary-300 mt-1 text-right"><span id="char-count">0</span>/500</p>
+      </div>
+      <button id="btn-submit-msg" class="btn-transition w-full sm:w-auto px-8 py-3 rounded-full bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 shadow-lg shadow-primary-600/20 hover:shadow-xl">
+        提交寄语
+      </button>
+    </div>
+    <!-- 模拟校友留言展示区 -->
+    <div id="message-list" class="space-y-5">
+      <!-- JS动态渲染（含初始模拟留言） -->
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 八、板块6：底部页脚（联系我们）                                 -->
+<!-- ============================================================ -->
+<footer id="contact" class="bg-primary-900 text-warm-200/80 pt-16 pb-8 px-4">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-3 gap-10 mb-12">
+      <!-- 版权与平台信息 -->
+      <div>
+        <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+          <span class="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center text-white text-xs font-black">晋</span>
+          晋城一中校友平台
+        </h3>
+        <p class="text-sm leading-relaxed mb-4">
+          联结历届校友，传承一中精神。<br>本平台由晋城一中校友会发起建设，旨在为全球校友提供交流、互助与资源共享的服务平台。
+        </p>
+        <p class="text-xs text-warm-400/50">
+          © 2026 晋城一中校友平台. All Rights Reserved.
+        </p>
+      </div>
+      <!-- 联系方式 -->
+      <div>
+        <h4 class="text-white font-semibold mb-4">联系我们</h4>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-start gap-3">
+            <span class="text-accent-400 mt-0.5">📍</span>
+            <span>山西省晋城市城区文昌东街68号 · 晋城一中校务办公室</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-accent-400 mt-0.5">📞</span>
+            <span>0356-2024XXX（校友事务专线）</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-accent-400 mt-0.5">✉️</span>
+            <span>alumni@jcyz.edu.cn</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-accent-400 mt-0.5">🕐</span>
+            <span>工作日 8:30–12:00 / 14:30–18:00</span>
+          </li>
+        </ul>
+      </div>
+      <!-- 官方交流群二维码 -->
+      <div class="text-center md:text-left">
+        <h4 class="text-white font-semibold mb-4">官方校友交流群</h4>
+        <div class="inline-block bg-white p-3 rounded-xl">
+          <div class="w-36 h-36 bg-primary-100 rounded-lg flex items-center justify-center">
+            <!-- 二维码占位区域 -->
+            <div class="text-center text-primary-400">
+              <svg class="w-16 h-16 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2m0 0H8m4 0h4m-8-6h.01M12 12h.01M16 12h.01M8 8h.01M16 8h.01M12 16h.01"/>
+              </svg>
+              <p class="text-xs">扫码加入<br>校友微信群</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-warm-400/50 mt-3">微信扫码添加校友群管理员</p>
+      </div>
+    </div>
+    <!-- 底部备案信息 -->
+    <hr class="border-warm-400/15 mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-warm-400/40">
+      <span>晋ICP备2026XXXXXXXX号-1 | 晋公网安备 14050002000XXX号</span>
+      <span>晋城一中校友会 · 版权所有</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================ -->
+<!-- 原生 JavaScript：导航、滚动、搜索、留言、相册等交互逻辑          -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  // ======== DOM元素引用 ========
+  const navbar       = document.getElementById('navbar');
+  const navBrand     = document.getElementById('nav-brand');
+  const navTitle     = document.getElementById('nav-title');
+  const menuToggle   = document.getElementById('menu-toggle');
+  const mobileMenu   = document.getElementById('mobile-menu');
+  const bar1 = document.getElementById('bar1'), bar2 = document.getElementById('bar2'), bar3 = document.getElementById('bar3');
+
+  // ======== 一、导航栏滚动深浅切换 ========
+  function updateNavStyle() {
+    const scrollY = window.scrollY;
+    const isHome  = scrollY < 80;
+    // 所有导航链接
+    const navLinks = document.querySelectorAll('.nav-link');
+    if (isHome) {
+      // 首页顶部：透明背景、白色文字
+      navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-lg', 'text-primary-800');
+      navbar.classList.add('text-white');
+      navBrand.classList.add('text-white');
+      navBrand.classList.remove('text-primary-800');
+      navLinks.forEach(function(l) { l.classList.remove('text-primary-700'); l.classList.add('text-white/90'); });
+      document.getElementById('btn-login-desktop').classList.remove('border-primary-300','text-primary-700','hover:bg-primary-50');
+      document.getElementById('btn-login-desktop').classList.add('border-white/60','text-white','hover:bg-white','hover:text-primary-700');
+    } else {
+      // 滚动后：白色背景、深色文字
+      navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-lg', 'text-primary-800');
+      navbar.classList.remove('text-white');
+      navBrand.classList.remove('text-white');
+      navBrand.classList.add('text-primary-800');
+      navLinks.forEach(function(l) { l.classList.add('text-primary-700'); l.classList.remove('text-white/90'); });
+      document.getElementById('btn-login-desktop').classList.add('border-primary-300','text-primary-700','hover:bg-primary-50');
+      document.getElementById('btn-login-desktop').classList.remove('border-white/60','text-white','hover:bg-white','hover:text-primary-700');
+    }
+  }
+  window.addEventListener('scroll', updateNavStyle, { passive: true });
+  updateNavStyle(); // 初始调用
+
+  // ======== 二、移动端菜单切换 ========
+  menuToggle.addEventListener('click', function() {
+    var open = !mobileMenu.classList.contains('hidden');
+    if (open) {
+      mobileMenu.classList.add('hidden');
+      bar1.style.transform = ''; bar2.style.opacity = ''; bar3.style.transform = '';
+    } else {
+      mobileMenu.classList.remove('hidden');
+      bar1.style.transform = 'rotate(45deg) translate(5px,5px)';
+      bar2.style.opacity = '0';
+      bar3.style.transform = 'rotate(-45deg) translate(5px,-5px)';
+    }
+  });
+  // 点击菜单链接自动关闭移动菜单
+  mobileMenu.querySelectorAll('a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      mobileMenu.classList.add('hidden');
+      bar1.style.transform = ''; bar2.style.opacity = ''; bar3.style.transform = '';
+    });
+  });
+
+  // ======== 三、导航锚点平滑滚动 ========
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      var target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        var offset = navbar.offsetHeight + 10;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // ======== 四、校友名录搜索 ========
+  // 模拟校友数据
+  var alumniData = [
+    { name: '张明远', year: '2018', class: '1班', industry: '互联网',    city: '北京' },
+    { name: '李思涵', year: '2018', class: '3班', industry: '金融',      city: '上海' },
+    { name: '王浩然', year: '2017', class: '2班', industry: '医疗',      city: '太原' },
+    { name: '赵晓颖', year: '2019', class: '5班', industry: '教育',      city: '晋城' },
+    { name: '陈俊杰', year: '2016', class: '1班', industry: '互联网',    city: '深圳' },
+    { name: '刘雨桐', year: '2020', class: '4班', industry: '法律',      city: '北京' },
+    { name: '周子涵', year: '2018', class: '2班', industry: '建筑',      city: '广州' },
+    { name: '吴佳琪', year: '2017', class: '6班', industry: '文化艺术',  city: '杭州' },
+    { name: '郑博文', year: '2015', class: '3班', industry: '科研',      city: '南京' },
+    { name: '孙雨萱', year: '2019', class: '1班', industry: '教育',      city: '武汉' },
+    { name: '马天宇', year: '2021', class: '7班', industry: '新能源',    city: '西安' },
+    { name: '朱晓萌', year: '2016', class: '4班', industry: '金融',      city: '成都' },
+  ];
+
+  function renderAlumni(data) {
+    var grid = document.getElementById('alumni-grid');
+    var countEl = document.getElementById('result-count');
+    countEl.textContent = '共找到 ' + data.length + ' 位校友';
+    if (data.length === 0) {
+      grid.innerHTML = '<p class="col-span-full text-center text-primary-400 py-10">未找到匹配的校友，请尝试其他关键词。</p>';
+      return;
+    }
+    grid.innerHTML = data.map(function(a) {
+      return '<div class="card-hover bg-white rounded-xl shadow-sm p-5 border border-primary-100/50">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-sm">' + a.name.charAt(0) + '</div>' +
+          '<div>' +
+            '<h4 class="font-bold text-primary-800">' + a.name + '</h4>' +
+            '<span class="text-xs text-primary-400">' + a.year + '届 · ' + a.class + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flex items-center gap-4 text-xs text-primary-500/70">' +
+          '<span>🏢 ' + a.industry + '</span>' +
+          '<span>📍 ' + a.city + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function doSearch() {
+    var yearVal    = document.getElementById('filter-year').value.trim().toLowerCase();
+    var classVal   = document.getElementById('filter-class').value.trim().toLowerCase();
+    var nameVal    = document.getElementById('filter-name').value.trim().toLowerCase();
+    var industryVal = document.getElementById('filter-industry').value.trim().toLowerCase();
+    var filtered = alumniData.filter(function(a) {
+      if (yearVal    && a.year.toLowerCase().indexOf(yearVal) === -1)       return false;
+      if (classVal   && a.class.toLowerCase().indexOf(classVal) === -1)     return false;
+      if (nameVal    && a.name.toLowerCase().indexOf(nameVal) === -1)        return false;
+      if (industryVal && a.industry.toLowerCase().indexOf(industryVal) === -1) return false;
+      return true;
+    });
+    renderAlumni(filtered);
+  }
+
+  document.getElementById('btn-search-filter').addEventListener('click', doSearch);
+  document.getElementById('btn-reset-filter').addEventListener('click', function() {
+    document.getElementById('filter-year').value = '';
+    document.getElementById('filter-class').value = '';
+    document.getElementById('filter-name').value = '';
+    document.getElementById('filter-industry').value = '';
+    renderAlumni(alumniData);
+  });
+  // 支持回车搜索
+  ['filter-year','filter-class','filter-name','filter-industry'].forEach(function(id) {
+    document.getElementById(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doSearch();
+    });
+  });
+  // 初始渲染
+  renderAlumni(alumniData);
+
+  // ======== 五、校园回忆相册 ========
+  // 在线无版权校园相关图片（Unsplash）
+  var galleryImages = [
+    { url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=500&fit=crop&q=80', label: '校园主楼' },
+    { url: 'https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=500&fit=crop&q=80', label: '教学楼' },
+    { url: 'https://images.unsplash.com/photo-1523050854058-8df90910d6b7?w=800&h=500&fit=crop&q=80', label: '校园全景' },
+    { url: 'https://images.unsplash.com/photo-1577897113292-3b38d3c0dd4f?w=800&h=500&fit=crop&q=80', label: '操场' },
+    { url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=500&fit=crop&q=80', label: '图书馆' },
+    { url: 'https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?w=800&h=500&fit=crop&q=80', label: '毕业留念' },
+    { url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&h=500&fit=crop&q=80', label: '校园春色' },
+    { url: 'https://images.unsplash.com/photo-1498243691581-b145c3f54a53?w=800&h=500&fit=crop&q=80', label: '秋日校园' },
+  ];
+
+  var galleryContainer = document.getElementById('gallery-container');
+  galleryContainer.innerHTML = galleryImages.map(function(img) {
+    return '<div class="gallery-item w-72 md:w-80 lg:w-96 flex-shrink-0">' +
+      '<img src="' + img.url + '" alt="' + img.label + '" class="w-full h-52 md:h-60 object-cover rounded-2xl shadow-lg" loading="lazy">' +
+      '<p class="text-white/70 text-sm mt-2 text-center">' + img.label + '</p>' +
+    '</div>';
+  }).join('');
+
+  // 左右箭头按钮
+  var scrollAmount = 320;
+  document.getElementById('gallery-prev').addEventListener('click', function() {
+    galleryContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  });
+  document.getElementById('gallery-next').addEventListener('click', function() {
+    galleryContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  });
+
+  // ======== 六、校友留言板 ========
+  // 模拟初始留言
+  var sampleMessages = [
+    { nickname: '老校友张建国', year: '1985届', content: '毕业四十年，母校的一草一木依然历历在目。感谢母校的培养，祝愿母校越来越好，桃李满天下！', time: '2026-06-01' },
+    { nickname: '小李飞刀',    year: '2010届', content: '每次路过校门口都会想起当年和同学们一起奋斗的日子。一中，永远的精神家园！',           time: '2026-05-28' },
+    { nickname: '北漂程序员',  year: '2015届', content: '从一中走出去才知道那段时光有多珍贵。希望学弟学妹们珍惜当下，努力拼搏！',             time: '2026-05-20' },
+    { nickname: '桃李不言',    year: '2000届', content: '三尺讲台存日月，一支粉笔写春秋。感谢每一位老师的辛勤付出，你们辛苦了！',             time: '2026-05-15' },
+  ];
+
+  var messageList = document.getElementById('message-list');
+
+  function renderMessage(msg) {
+    return '<div class="bg-white rounded-xl shadow-sm p-5 border border-primary-100/30 card-hover">' +
+      '<div class="flex items-center justify-between mb-3">' +
+        '<div class="flex items-center gap-3">' +
+          '<div class="w-9 h-9 rounded-full bg-accent-400/20 flex items-center justify-center text-accent-500 font-bold text-sm">' + msg.nickname.charAt(0) + '</div>' +
+          '<div>' +
+            '<span class="font-semibold text-primary-800 text-sm">' + msg.nickname + '</span>' +
+            '<span class="text-xs text-primary-400 ml-2 bg-primary-50 px-2 py-0.5 rounded-full">' + msg.year + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<span class="text-xs text-primary-300">' + msg.time + '</span>' +
+      '</div>' +
+      '<p class="text-sm text-primary-600/80 leading-relaxed">' + msg.content + '</p>' +
+    '</div>';
+  }
+
+  function renderAllMessages(msgs) {
+    messageList.innerHTML = msgs.map(renderMessage).join('');
+  }
+
+  // 初始渲染
+  renderAllMessages(sampleMessages);
+
+  // 提交新留言
+  document.getElementById('btn-submit-msg').addEventListener('click', function() {
+    var nickname = document.getElementById('msg-nickname').value.trim();
+    var year     = document.getElementById('msg-year').value.trim();
+    var content  = document.getElementById('msg-content').value.trim();
+    if (!nickname || !year || !content) {
+      alert('请填写昵称、届别和留言内容后再提交。');
+      return;
+    }
+    var now = new Date();
+    var timeStr = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0');
+    var newMsg = { nickname: nickname, year: year, content: content, time: timeStr };
+    // 插入到列表最前面
+    var allMsgs = [newMsg].concat(sampleMessages);
+    renderAllMessages(allMsgs);
+    // 清空表单
+    document.getElementById('msg-nickname').value = '';
+    document.getElementById('msg-year').value = '';
+    document.getElementById('msg-content').value = '';
+    document.getElementById('char-count').textContent = '0';
+    // 滚动到留言区
+    messageList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // 字数统计
+  document.getElementById('msg-content').addEventListener('input', function() {
+    document.getElementById('char-count').textContent = this.value.length;
+  });
+
+  // ======== 七、关闭移动菜单（点击页面其他区域） ========
+  document.addEventListener('click', function(e) {
+    if (!mobileMenu.classList.contains('hidden') &&
+        !mobileMenu.contains(e.target) &&
+        e.target !== menuToggle &&
+        !menuToggle.contains(e.target)) {
+      mobileMenu.classList.add('hidden');
+      bar1.style.transform = ''; bar2.style.opacity = ''; bar3.style.transform = '';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
